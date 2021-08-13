@@ -51,21 +51,21 @@ RUN cp /build_data/stable_plugins.txt /plugins && cp /build_data/community_plugi
     cp /build_data/log4j.properties  ${CATALINA_HOME}  && \
     cp /build_data/letsencrypt-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat.xsl
 
-ADD scripts /scripts
-RUN chmod +x /scripts/*.sh
-RUN /scripts/setup.sh \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-EXPOSE  $HTTPS_PORT
-RUN echo $GS_VERSION > /scripts/geoserver_version.txt
 RUN groupadd -r ${GROUP_NAME} -g ${GEOSERVER_GID} && \
     useradd -m -d /home/${USER}/ -u ${GEOSERVER_UID} --gid ${GEOSERVER_GID} -s /bin/bash -G ${GROUP_NAME} ${USER}
 
-RUN chown -R ${USER}:${GROUP_NAME} ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
- ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} /tmp/ /home/${USER}/ /community_plugins/ \
- /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
+ADD scripts /scripts
+RUN chmod +x /scripts/*.sh
+RUN /scripts/setup.sh \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && chown -R ${USER}:${GROUP_NAME} ${CATALINA_HOME} ${FOOTPRINTS_DATA_DIR}  \
+        ${GEOSERVER_DATA_DIR} /scripts ${CERT_DIR} ${FONTS_DIR} /tmp/ /home/${USER}/ /community_plugins/ \
+        /plugins ${GEOSERVER_HOME} ${EXTRA_CONFIG_DIR} /usr/share/fonts/
 
 RUN chmod o+rw ${CERT_DIR}
+
+EXPOSE  $HTTPS_PORT
+RUN echo $GS_VERSION > /scripts/geoserver_version.txt
 
 USER ${GEOSERVER_UID}
 RUN echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
